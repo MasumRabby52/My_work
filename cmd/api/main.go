@@ -4,6 +4,7 @@ import (
 	"log"
 	"my_work/internal/config"
 	"my_work/internal/database"
+	"my_work/internal/handlers"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -34,5 +35,9 @@ func main() {
 			"database": "connected",
 		})
 	})
+
+	router.POST("/myWorks", handlers.CreateMyWorkHandler(pool))
+	router.GET("/myWorks", handlers.GetAllMyWorksHandler(pool))
+
 	router.Run(":" + cfg.Port)
 }
