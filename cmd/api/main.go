@@ -1,8 +1,30 @@
 package main
 
-import "github.com/gin-gonic/gin"
+import (
+	"log"
+	"my_work/internal/config"
+	"my_work/internal/database"
+
+	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5/pgxpool"
+)
 
 func main() {
+	var cfg *config.Config
+	var err error
+	cfg, err = config.Load()
+
+	if err != nil {
+		log.Fatal("Failed to load configuration: ", err)
+	}
+	var pool *pgxpool.Pool
+	pool, err = database.Connect(cfg.DatabaseURL)
+	if err != nil {
+		log.Fatal("Failed to connect to database: ", err)
+		return
+	}
+	defer pool.Close()
+
 	var router *gin.Engine = gin.Default()
 	router.SetTrustedProxies(nil)
 	router.GET("/", func(c *gin.Context) {
@@ -12,5 +34,5 @@ func main() {
 			"database": "connected",
 		})
 	})
-	router.Run(":8000")
+	router.Run(":" + cfg.Port)
 }
