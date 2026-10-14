@@ -74,3 +74,28 @@ func GetAllTodos(pool *pgxpool.Pool) ([]models.MyWork, error) {
 	return myWorks, nil
 
 }
+
+func GetMyWorkByID(pool *pgxpool.Pool, id int) (*models.MyWork, error) {
+	var ctx context.Context
+	var cancel context.CancelFunc
+	ctx, cancel = context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	var query string = `
+	SELECT * FROM my_works
+	WHERE id=$1
+	`
+	var myWork models.MyWork
+	var err error = pool.QueryRow(ctx, query, id).Scan(
+		&myWork.ID,
+		&myWork.Title,
+		&myWork.Completed,
+		&myWork.CreatedAt,
+		&myWork.UpdatedAt,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+	return &myWork, nil
+}

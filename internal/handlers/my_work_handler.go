@@ -3,8 +3,10 @@ package handlers
 import (
 	"my_work/internal/repository"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -39,5 +41,26 @@ func GetAllMyWorksHandler(pool *pgxpool.Pool) gin.HandlerFunc {
 			return
 		}
 		c.JSON(http.StatusOK, myWorks)
+	}
+}
+
+func GetMyWorkByIDHandler(pool *pgxpool.Pool) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		idStr := c.Param("id")
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid myWork ID"})
+			return
+		}
+		myWork, err := repository.GetMyWorkByID(pool, id)
+		if err != nil {
+			if err == pgx.ErrNoRows {
+				c.JSON(http.StatusNotFound, gin.H{"error": "myWork Not found"})
+				return
+			}
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error})
+			return
+		}
+		c.JSON(http.StatusOK, myWork)
 	}
 }
