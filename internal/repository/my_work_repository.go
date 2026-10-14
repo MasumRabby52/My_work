@@ -99,3 +99,31 @@ func GetMyWorkByID(pool *pgxpool.Pool, id int) (*models.MyWork, error) {
 	}
 	return &myWork, nil
 }
+
+func UpdateMyWork(pool *pgxpool.Pool, id int, title string, completed bool) (*models.MyWork, error) {
+	var ctx context.Context
+	var cancel context.CancelFunc
+	ctx, cancel = context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	var query string = `
+	UPDATE my_works
+	SET title=$1,completed=$2,updated_at=CURRENT_TIMESTAMP
+	WHERE id=$3
+	RETURNING id,title,completed,created_at,updated_at
+	`
+
+	var myWork models.MyWork
+	var err error = pool.QueryRow(ctx, query, title, completed, id).Scan(
+		&myWork.ID,
+		&myWork.Title,
+		&myWork.Completed,
+		&myWork.CreatedAt,
+		&myWork.UpdatedAt,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+	return &myWork, nil
+}

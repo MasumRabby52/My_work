@@ -39,6 +39,7 @@ func main() {
 	router.POST("/myWorks", handlers.CreateMyWorkHandler(pool))
 	router.GET("/myWorks", handlers.GetAllMyWorksHandler(pool))
 	router.GET("/myWorks/:id", handlers.GetMyWorkByIDHandler(pool))
+	router.PUT("/myWorks/:id", handlers.UpdateMyWorkHandler(pool))
 
 	router.Run(":" + cfg.Port)
 }
