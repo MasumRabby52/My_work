@@ -36,10 +36,13 @@ func main() {
 		})
 	})
 
+	router.POST("/auth/register", handlers.CreateMemberHandler(pool))
+
 	router.POST("/myWorks", handlers.CreateMyWorkHandler(pool))
 	router.GET("/myWorks", handlers.GetAllMyWorksHandler(pool))
 	router.GET("/myWorks/:id", handlers.GetMyWorkByIDHandler(pool))
 	router.PUT("/myWorks/:id", handlers.UpdateMyWorkHandler(pool))
+	router.DELETE("/myWorks/:id", handlers.DeleteMyWorkHandler(pool))
 
 	router.Run(":" + cfg.Port)
 }

@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"my_work/internal/models"
 	"time"
 
@@ -33,7 +34,7 @@ func CreateMyWork(pool *pgxpool.Pool, title string, completed bool) (*models.MyW
 	return &myWork, nil
 }
 
-func GetAllTodos(pool *pgxpool.Pool) ([]models.MyWork, error) {
+func GetAllMyWorks(pool *pgxpool.Pool) ([]models.MyWork, error) {
 	var ctx context.Context
 	var cancel context.CancelFunc
 	ctx, cancel = context.WithTimeout(context.Background(), 5*time.Second)
@@ -126,4 +127,26 @@ func UpdateMyWork(pool *pgxpool.Pool, id int, title string, completed bool) (*mo
 		return nil, err
 	}
 	return &myWork, nil
+}
+func DeleteMyWork(pool *pgxpool.Pool, id int) error {
+	var ctx context.Context
+	var cancel context.CancelFunc
+	ctx, cancel = context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	var query string = `
+	DELETE FROM my_works
+	WHERE id=$1
+    `
+
+	var commandTag, err = pool.Exec(ctx, query, id)
+
+	if err != nil {
+		return err
+	}
+
+	if commandTag.RowsAffected() == 0 {
+		return fmt.Errorf("todo with id %d  not found", id)
+	}
+	return nil
 }

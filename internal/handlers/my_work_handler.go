@@ -39,7 +39,7 @@ func CreateMyWorkHandler(pool *pgxpool.Pool) gin.HandlerFunc {
 
 func GetAllMyWorksHandler(pool *pgxpool.Pool) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		myWorks, err := repository.GetAllTodos(pool)
+		myWorks, err := repository.GetAllMyWorks(pool)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
@@ -115,5 +115,26 @@ func UpdateMyWorkHandler(pool *pgxpool.Pool) gin.HandlerFunc {
 			return
 		}
 		c.JSON(http.StatusOK, myWork)
+	}
+}
+
+func DeleteMyWorkHandler(pool *pgxpool.Pool) gin.HandlerFunc {
+	return func(c *gin.Context) {
+
+		idStr := c.Param("id")
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid myWork ID"})
+		}
+		err = repository.DeleteMyWork(pool, id)
+		if err != nil {
+			if err.Error() == "myWork with id "+idStr+" not found" {
+				c.JSON(http.StatusNotFound, gin.H{"error": "myWork not found"})
+				return
+			}
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"message": "myWork deleted successfully"})
 	}
 }
