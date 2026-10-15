@@ -21,8 +21,15 @@ type UpdateMyWorkInput struct {
 
 func CreateMyWorkHandler(pool *pgxpool.Pool) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var input CreateMyWorkInput
 
+		memberID, exists := c.Get("member_id")
+		if !exists {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "member_id not found in context"})
+			return
+		}
+		
+
+		var input CreateMyWorkInput
 		if err := c.ShouldBindJSON(&input); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
