@@ -8,4 +8,5 @@ type MyWork struct {
 	Completed bool      `json:"completed" db:"completed"`
 	CreatedAt time.Time `json:"created_at" db:"created_at"`
 	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
+	MemberID  string    `json:"member_id" db:"member_id"`
 }

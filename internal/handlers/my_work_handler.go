@@ -21,13 +21,12 @@ type UpdateMyWorkInput struct {
 
 func CreateMyWorkHandler(pool *pgxpool.Pool) gin.HandlerFunc {
 	return func(c *gin.Context) {
-
-		memberID, exists := c.Get("member_id")
+		memberIDInterface, exists := c.Get("member_id")
 		if !exists {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "member_id not found in context"})
 			return
 		}
-		
+		memberID := memberIDInterface.(string)
 
 		var input CreateMyWorkInput
 		if err := c.ShouldBindJSON(&input); err != nil {
@@ -35,7 +34,7 @@ func CreateMyWorkHandler(pool *pgxpool.Pool) gin.HandlerFunc {
 			return
 		}
 
-		myWork, err := repository.CreateMyWork(pool, input.Title, input.Completed)
+		myWork, err := repository.CreateMyWork(pool, input.Title, input.Completed, memberID)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
@@ -46,7 +45,14 @@ func CreateMyWorkHandler(pool *pgxpool.Pool) gin.HandlerFunc {
 
 func GetAllMyWorksHandler(pool *pgxpool.Pool) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		myWorks, err := repository.GetAllMyWorks(pool)
+		memberIDInterface, exists := c.Get("member_id")
+		if !exists {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "member_id not found in context"})
+			return
+		}
+		memberID := memberIDInterface.(string)
+
+		myWorks, err := repository.GetAllMyWorks(pool, memberID)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
@@ -57,13 +63,20 @@ func GetAllMyWorksHandler(pool *pgxpool.Pool) gin.HandlerFunc {
 
 func GetMyWorkByIDHandler(pool *pgxpool.Pool) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		memberIDInterface, exists := c.Get("member_id")
+		if !exists {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "member_id not found in context"})
+			return
+		}
+		memberID := memberIDInterface.(string)
+
 		idStr := c.Param("id")
 		id, err := strconv.Atoi(idStr)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid myWork ID"})
 			return
 		}
-		myWork, err := repository.GetMyWorkByID(pool, id)
+		myWork, err := repository.GetMyWorkByID(pool, id, memberID)
 		if err != nil {
 			if err == pgx.ErrNoRows {
 				c.JSON(http.StatusNotFound, gin.H{"error": "myWork Not found"})
@@ -78,6 +91,13 @@ func GetMyWorkByIDHandler(pool *pgxpool.Pool) gin.HandlerFunc {
 
 func UpdateMyWorkHandler(pool *pgxpool.Pool) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		memberIDInterface, exists := c.Get("member_id")
+		if !exists {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "member_id not found in context"})
+			return
+		}
+		memberID := memberIDInterface.(string)
+
 		idStr := c.Param("id")
 		id, err := strconv.Atoi(idStr)
 
@@ -96,7 +116,7 @@ func UpdateMyWorkHandler(pool *pgxpool.Pool) gin.HandlerFunc {
 			return
 		}
 
-		existing, err := repository.GetMyWorkByID(pool, id)
+		existing, err := repository.GetMyWorkByID(pool, id, memberID)
 
 		if err != nil {
 			if err == pgx.ErrNoRows {
@@ -115,7 +135,7 @@ func UpdateMyWorkHandler(pool *pgxpool.Pool) gin.HandlerFunc {
 		if input.Completed != nil {
 			completed = *input.Completed
 		}
-		myWork, err := repository.UpdateMyWork(pool, id, title, completed)
+		myWork, err := repository.UpdateMyWork(pool, id, title, completed, memberID)
 
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -127,13 +147,19 @@ func UpdateMyWorkHandler(pool *pgxpool.Pool) gin.HandlerFunc {
 
 func DeleteMyWorkHandler(pool *pgxpool.Pool) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		memberIDInterface, exists := c.Get("member_id")
+		if !exists {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "member_id not found in context"})
+			return
+		}
+		memberID := memberIDInterface.(string)
 
 		idStr := c.Param("id")
 		id, err := strconv.Atoi(idStr)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid myWork ID"})
 		}
-		err = repository.DeleteMyWork(pool, id)
+		err = repository.DeleteMyWork(pool, id, memberID)
 		if err != nil {
 			if err.Error() == "myWork with id "+idStr+" not found" {
 				c.JSON(http.StatusNotFound, gin.H{"error": "myWork not found"})

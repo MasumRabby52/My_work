@@ -1,0 +1,3 @@
+ALTER TABLE my_works DROP CONSTRAINT IF EXISTS fk_myWorks_user;
+
+ALTER TABLE my_works DROP COLUMN IF EXISTS member_id;

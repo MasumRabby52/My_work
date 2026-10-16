@@ -1,0 +1,3 @@
+ALTER TABLE my_works ADD COLUMN member_id UUID NOT NULL;
+
+ALTER TABLE my_works ADD CONSTRAINT fk_myWorks_member FOREIGN KEY (member_id) REFERENCES members(id) ON DELETE CASCADE;
