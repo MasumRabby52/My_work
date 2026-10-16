@@ -40,11 +40,11 @@ func main() {
 	router.POST("/auth/register", handlers.CreateMemberHandler(pool))
 	router.POST("/auth/login", handlers.LoginHandler(pool, cfg))
 
-	router.POST("/myWorks", handlers.CreateMyWorkHandler(pool))
-	router.GET("/myWorks", handlers.GetAllMyWorksHandler(pool))
-	router.GET("/myWorks/:id", handlers.GetMyWorkByIDHandler(pool))
-	router.PUT("/myWorks/:id", handlers.UpdateMyWorkHandler(pool))
-	router.DELETE("/myWorks/:id", handlers.DeleteMyWorkHandler(pool))
+	router.POST("/myWorks", middleware.AuthMiddleware(cfg), handlers.CreateMyWorkHandler(pool))
+	router.GET("/myWorks", middleware.AuthMiddleware(cfg), handlers.GetAllMyWorksHandler(pool))
+	router.GET("/myWorks/:id", middleware.AuthMiddleware(cfg), handlers.GetMyWorkByIDHandler(pool))
+	router.PUT("/myWorks/:id", middleware.AuthMiddleware(cfg), handlers.UpdateMyWorkHandler(pool))
+	router.DELETE("/myWorks/:id", middleware.AuthMiddleware(cfg), handlers.DeleteMyWorkHandler(pool))
 
 	router.GET("/protected-test", middleware.AuthMiddleware(cfg), handlers.TestProtectedHandler())
 

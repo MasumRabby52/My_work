@@ -44,6 +44,7 @@ func GetAllMyWorks(pool *pgxpool.Pool, memberID string) ([]models.MyWork, error)
 	var query string = `
 	SELECT * FROM my_works
 	WHERE member_id=$1
+	ORDER BY created_at DESC
 	`
 	var rows, err = pool.Query(ctx, query, memberID)
 
@@ -114,7 +115,7 @@ func UpdateMyWork(pool *pgxpool.Pool, id int, title string, completed bool, memb
 	var query string = `
 	UPDATE my_works
 	SET title=$1,completed=$2,updated_at=CURRENT_TIMESTAMP
-	WHERE id=$3 and member_id=$2
+	WHERE id=$3 and member_id=$4
 	RETURNING id,title,completed,created_at,updated_at,member_id
 	`
 
@@ -125,6 +126,7 @@ func UpdateMyWork(pool *pgxpool.Pool, id int, title string, completed bool, memb
 		&myWork.Completed,
 		&myWork.CreatedAt,
 		&myWork.UpdatedAt,
+		&myWork.MemberID,
 	)
 
 	if err != nil {
@@ -150,7 +152,7 @@ func DeleteMyWork(pool *pgxpool.Pool, id int, memberID string) error {
 	}
 
 	if commandTag.RowsAffected() == 0 {
-		return fmt.Errorf("mywork with id %d  not found", id)
+		return fmt.Errorf("myWork with id %d  not found", id)
 	}
 	return nil
 }
