@@ -40,6 +40,7 @@ func AuthMiddleware(cfg *config.Config) gin.HandlerFunc {
 			c.Abort()
 			return
 		}
+
 		claims, ok := token.Claims.(jwt.MapClaims)
 
 		if !ok {
